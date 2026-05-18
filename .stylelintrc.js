@@ -1,7 +1,8 @@
 module.exports = {
   processors: [],
-  plugins: ['stylelint-order', 'stylelint-config-rational-order/plugin'],
+  plugins: ['stylelint-order'],
   extends: ['stylelint-config-standard'],
+  customSyntax: 'postcss-scss',
   rules: {
     'at-rule-no-unknown': [true,
       {
@@ -13,10 +14,6 @@ module.exports = {
     'font-family-no-missing-generic-family-keyword': null,
     'no-descending-specificity': null,
     'order/properties-order': [],
-    'plugin/rational-order': [true, {
-        'border-in-box-model': true,
-        'empty-line-between-groups': false
-      }],
     'color-function-notation': 'legacy',
     'string-quotes': 'single',
     'alpha-value-notation': 'number',

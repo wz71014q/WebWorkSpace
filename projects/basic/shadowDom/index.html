@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Shadow DOM 面试知识点 Demo</title>
+</head>
+
+<body>
+  <h1>🛡️ Shadow DOM 面试知识点梳理</h1>
+
+  <!-- ========== 1. 基础概念：open vs closed ========== -->
+  <section class="demo-section" id="demo1">
+    <h2>1. 基础概念：open vs closed 模式</h2>
+    <p class="desc">Shadow DOM 为元素创建一个独立的 DOM 子树，<code>open</code> 模式可通过 <code>element.shadowRoot</code> 访问，<code>closed</code> 模式返回 <code>null</code>。</p>
+    <div class="demo-area">
+      <div class="box" id="openShadowHost">
+        <p>我是 light DOM 内容</p>
+      </div>
+      <div class="box" id="closedShadowHost">
+        <p>我是 light DOM 内容</p>
+      </div>
+      <div class="controls">
+        <button id="checkShadowAccess">检查 shadowRoot 访问结果</button>
+        <pre id="shadowAccessResult" class="output"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 2. 样式隔离 ========== -->
+  <section class="demo-section" id="demo2">
+    <h2>2. 样式隔离</h2>
+    <p class="desc">Shadow DOM 外的 CSS 规则不会渗入内部（<strong>外部→内部隔离</strong>），内部的样式也不会泄漏到外部（<strong>内部→外部隔离</strong>）。这是 Shadow DOM 最核心的应用价值。</p>
+    <div class="demo-area">
+      <div class="comparison">
+        <div class="box" id="styleIsolationHost">
+          <p class="should-be-red">这条文本在 Shadow DOM 内部</p>
+        </div>
+        <div class="box">
+          <p class="should-be-red">这条文本在 Shadow DOM 外部（对比组）</p>
+        </div>
+      </div>
+      <p class="note">全局 CSS 将 <code>.should-be-red</code> 设为红色，shadow 内部不会被影响。</p>
+    </div>
+    <div class="demo-area" id="inheritDemo">
+      <h3>可继承属性仍然生效</h3>
+      <p class="desc">虽然样式被隔离，但 <strong>可继承属性</strong>（color、font-family 等）仍然会穿透 Shadow DOM 边界。</p>
+      <div class="box" id="inheritHost">
+        <p>Shadow 内部的文本（未设 color，会从父级继承）</p>
+      </div>
+      <p class="note">父级 color 设为 blue，Shadow 内部未覆盖时依然显示蓝色。</p>
+    </div>
+  </section>
+
+  <!-- ========== 3. Custom Element ========== -->
+  <section class="demo-section" id="demo3">
+    <h2>3. Custom Element + Shadow DOM</h2>
+    <p class="desc">Custom Elements 与 Shadow DOM 结合是最常见的 Web Component 模式 — 一个封装了结构、样式和行为的独立组件。</p>
+    <div class="demo-area">
+      <my-tooltip text="这是通过 Shadow DOM 实现的 Tooltip组件!">将鼠标悬停在这里查看</my-tooltip>
+      <my-tooltip text="Shadow DOM 的优势：完全隔离">另一个 Tooltip 实例</my-tooltip>
+      <div class="controls">
+        <h4>my-tooltip 内部结构（已经封装在 Shadow DOM 中）：</h4>
+        <pre class="output">
+&lt;template id="tooltip-template"&gt;
+  &lt;style&gt;
+    .tooltip { ... }   /* 完全隔离，不影响外部 */
+    .tooltip-text { ... }
+  &lt;/style&gt;
+  &lt;span class="tooltip"&gt;
+    &lt;slot&gt;&lt;/slot&gt;          /* 投影外部内容 */
+    &lt;span class="tooltip-text"&gt;&lt;/span&gt;
+  &lt;/span&gt;
+&lt;/template&gt;</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 4. Slot 机制 ========== -->
+  <section class="demo-section" id="demo4">
+    <h2>4. Slot 插槽机制：投影 vs 嵌套</h2>
+    <p class="desc">Slot 让外部内容被投影（project）到 Shadow DOM 内部。与 iframe 的"嵌套"不同，slot 是"投影"——内容仍属于 Light DOM，只是渲染位置在 Shadow DOM 中。</p>
+    <div class="demo-area">
+      <my-card>
+        <span slot="title">Shadow DOM 面试指南</span>
+        <p>这是通过 slot 投影到 Shadow DOM 内部的内容。</p>
+        <p>外部定义的样式对投影内容仍然生效！</p>
+        <span slot="footer">底部信息：2026 面试必备</span>
+      </my-card>
+
+      <div class="comparison" id="slotVsNested">
+        <div class="box">
+          <h4>⬅️ Slot（投影）</h4>
+          <ul>
+            <li>内容属于 <strong>Light DOM</strong></li>
+            <li>外部样式对投影内容生效</li>
+            <li>内容在父级文档中可访问</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h4>iframe（嵌套）</h4>
+          <ul>
+            <li>内容属于 <strong>独立文档</strong></li>
+            <li>完全隔离，外部样式无效</li>
+            <li>跨文档通信需 postMessage</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 5. 事件处理 ========== -->
+  <section class="demo-section" id="demo5">
+    <h2>5. 事件重定向（Event Retargeting）</h2>
+    <p class="desc">Shadow DOM 内部触发的事件在冒泡到外部时，<code>event.target</code> 会被重定向为 shadow host 元素，以保持封装性。</p>
+    <div class="demo-area">
+      <my-event-demo id="eventDemoHost"></my-event-demo>
+      <div class="controls">
+        <button id="addOuterListener">在 Light DOM 中监听事件</button>
+        <pre id="eventResult" class="output">点击上方按钮后查看事件信息...</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 6. Shadow DOM CSS 伪类 ========== -->
+  <section class="demo-section" id="demo6">
+    <h2>6. Shadow DOM 特有 CSS 特性</h2>
+    <div class="demo-area">
+      <div class="comparison">
+        <div class="box" id="pseudoDemoHost"></div>
+        <div class="box">
+          <h4>关键 CSS 伪类 / 伪元素：</h4>
+          <table>
+            <tr><td><code>:host</code></td><td>选中 Shadow Host 本身</td></tr>
+            <tr><td><code>:host-context(selector)</code></td><td>根据外部上下文选择 host</td></tr>
+            <tr><td><code>::slotted(selector)</code></td><td>选中投影到 slot 的内容</td></tr>
+            <tr><td><code>::part()</code></td><td>暴露 shadow 内部的元素供外部样式化</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+  <footer class="summary">
+    <h2>📋 面试核心要点总结</h2>
+    <table>
+      <tr><th>概念</th><th>要点</th></tr>
+      <tr><td>Shadow DOM 是什么</td><td>DOM 封装 + CSS 隔离 + 事件重定向，Web Component 三大标准之一</td></tr>
+      <tr><td>open vs closed</td><td>open 可通过 <code>.shadowRoot</code> 访问；closed 返回 <code>null</code>（浏览器内部常用，如 <code>&lt;video&gt;</code>）</td></tr>
+      <tr><td>样式隔离</td><td>外部 CSS 不进入 Shadow DOM；内部 CSS 不泄漏到外部；可继承属性仍可穿透</td></tr>
+      <tr><td>slot 机制</td><td>投影（projection）不是嵌套——内容属于 Light DOM，渲染在 Shadow DOM</td></tr>
+      <tr><td>事件重定向</td><td>Shadow DOM 内部事件冒泡到外部时，target 被重定向为 host 元素</td></tr>
+      <tr><td>CSS 伪类</td><td><code>:host</code> <code>:host-context()</code> <code>::slotted()</code> <code>::part()</code></td></tr>
+      <tr><td>适用场景</td><td>Web Components、设计系统、第三方嵌入组件、微前端隔离</td></tr>
+    </table>
+  </footer>
+</body>
+</html>

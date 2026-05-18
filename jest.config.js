@@ -16,11 +16,11 @@ module.exports = {
     '.*\\.(vue)$': 'vue-jest'
   },
   transformIgnorePatterns: ['<rootDir>/node_modules/'],
-  // testPathIgnorePatterns: [ // 忽略测试文件
-  //   '<rootDir>/projects/',
-  //   '<rootDir>/test/sub.test.js'
-  // ],
-  testRegex: 'slot.test.js', // 测试单个文件
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/projects/'
+  ],
+  testRegex: '(/test/.*)\\.test\\.js$', // 测试文件匹配模式
   snapshotSerializers: ['<rootDir>/node_modules/jest-serializer-vue'], // 快照的序列化工具
   collectCoverage: false, // 测试覆盖率
   coverageDirectory: '<rootDir>/test/coverage',
