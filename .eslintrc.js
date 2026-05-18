@@ -6,7 +6,7 @@ module.exports = {
     ecmaFeatures: {
       jsx: true,
     },
-    parser: 'babel-eslint',
+    parser: '@babel/eslint-parser',
   },
   plugins: ['react', 'vue', 'html'],
   env: {

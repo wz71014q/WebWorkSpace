@@ -15,7 +15,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const speedMeasurePlugin = require('speed-measure-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const smp = new speedMeasurePlugin();
 const spinner = ora({
@@ -68,21 +68,23 @@ program
                   },
                 },
               },
-              'sass-loader',
+              {
+                loader: 'sass-loader',
+                options: {
+                  implementation: require('sass'),
+                },
+              },
             ],
           },
         ],
       },
       optimization: {
         minimizer: [
-          new UglifyJsPlugin({
+          new TerserPlugin({
             exclude: /\.min\.js$/, // 排除项
-            cache: true,
             parallel: true, // 开启并行压缩，充分利用cpu
-            sourceMap: false,
             extractComments: false, // 移除注释
-            uglifyOptions: {
-              warnings: false,
+            terserOptions: {
               compress: {
                 unused: true,
                 drop_debugger: true
