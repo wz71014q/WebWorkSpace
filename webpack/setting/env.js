@@ -1,1 +1,1 @@
-const projectPath = 'canvas/water';
+const projectPath = 'jsdemo/tabCommunicate';
